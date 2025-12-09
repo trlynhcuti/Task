@@ -28,7 +28,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <ul class="navbar-nav me-auto">
 
             <li class="nav-item">
-                <a class="nav-link" href="/task-management/index.php">Trang chủ</a>
+                <a class="nav-link" href="/task_management/index.php">Trang chủ</a>
             </li>
 
             <?php   
@@ -46,14 +46,14 @@ if (session_status() === PHP_SESSION_NONE) {
                 if($_SESSION['user']['role'] == "admin"){
             ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="/Task_Management/pages/my_projects.php">Hoạt động</a>
+                    <a class="nav-link" href="/task_management/pages/admin/actions.php">Hoạt động</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Task_Management/pages/shared_projects.php">Báo cáo</a>
+                    <a class="nav-link" href="/task_management/pages/admin/reports.php">Báo cáo</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/Task_Management/pages/shared_projects.php">Quản lý người dùng</a>
+                    <a class="nav-link" href="/task_management/pages/admin/users.php">Quản lý người dùng</a>
                 </li>
             <?php } ?>
 
