@@ -32,7 +32,7 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
 
             <?php   
-                if($_SESSION['user']['role'] === "user"){
+                if($_SESSION['user']['role'] == "user"){
             ?>
                 <li class="nav-item">
                     <a class="nav-link" href="/Task_Management/pages/my_projects.php">Dự án của tôi</a>
@@ -43,9 +43,18 @@ if (session_status() === PHP_SESSION_NONE) {
                 </li>
             <?php } ?>
             <?php 
-                if($_SESSION['user']['role'] === "admin"){
+                if($_SESSION['user']['role'] == "admin"){
             ?>
-                
+                <li class="nav-item">
+                    <a class="nav-link" href="/Task_Management/pages/my_projects.php">Hoạt động</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/Task_Management/pages/shared_projects.php">Báo cáo</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Task_Management/pages/shared_projects.php">Quản lý người dùng</a>
+                </li>
             <?php } ?>
 
         </ul>
@@ -60,7 +69,9 @@ if (session_status() === PHP_SESSION_NONE) {
                     </a>
 
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/task-management/pages/logout.php">Đăng xuất</a></li>
+                        <li>
+                            <a class="dropdown-item" href="/task-management/pages/logout.php">Đăng xuất</a>
+                        </li>
                     </ul>
                 </li>
 
