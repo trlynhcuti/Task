@@ -17,7 +17,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-light px-3 fixed-top" style="background-color: #abc4ff;">
-    <a class="navbar-brand" href="/Task_Management/index.php">TaskManager</a>
+    <a class="navbar-brand" href="/task-management/index.php">TaskManager</a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
         <span class="navbar-toggler-icon"></span>
@@ -28,16 +28,25 @@ if (session_status() === PHP_SESSION_NONE) {
         <ul class="navbar-nav me-auto">
 
             <li class="nav-item">
-                <a class="nav-link" href="/Task_Management/index.php">Trang chủ</a>
+                <a class="nav-link" href="/task-management/index.php">Trang chủ</a>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="/Task_Management/pages/my_projects.php">Dự án của tôi</a>
-            </li>
+            <?php   
+                if($_SESSION['user']['role'] === "user"){
+            ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Task_Management/pages/my_projects.php">Dự án của tôi</a>
+                </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="/Task_Management/pages/shared_projects.php">Dự án được chia sẻ</a>
-            </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Task_Management/pages/shared_projects.php">Dự án được chia sẻ</a>
+                </li>
+            <?php } ?>
+            <?php 
+                if($_SESSION['user']['role'] === "admin"){
+            ?>
+                
+            <?php } ?>
 
         </ul>
 
@@ -51,14 +60,14 @@ if (session_status() === PHP_SESSION_NONE) {
                     </a>
 
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/Task_Management/pages/logout.php">Đăng xuất</a></li>
+                        <li><a class="dropdown-item" href="/task-management/pages/logout.php">Đăng xuất</a></li>
                     </ul>
                 </li>
 
             <?php else: ?>
                 <!-- Nếu chưa đăng nhập -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/Task_Management/pages/login.php">Đăng nhập</a>
+                    <a class="nav-link" href="/task-management/pages/login.php">Đăng nhập</a>
                 </li>
             <?php endif; ?>
 
