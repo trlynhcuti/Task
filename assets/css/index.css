@@ -1,0 +1,279 @@
+/* =========================
+   Global reset & variables
+   ========================= */
+:root {
+  --navbar-height: 56px;
+  --bg-page: #f3f6fb;
+  --card-bg: #ffffff;
+  --muted: #94a3b8;
+  --border: #eef2f6;
+  --accent-500: #1976d2;
+  --accent-400: #2f80ed;
+  --text-900: #0f1724;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding-top: var(--navbar-height); /* giữ khoảng cho header cố định */
+}
+
+/* =========================
+   NAVBAR (header)
+   ========================= */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--navbar-height);
+  background: #abc4ff;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  z-index: 9999;
+}
+
+.navbar-brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: #07122a;
+  text-decoration: none;
+  margin-right: 24px;
+  flex: 0 0 auto;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex: 1 1 auto;
+  justify-content: flex-start;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #07122a;
+  padding: 6px 10px;
+  white-space: nowrap;
+  border-radius: 6px;
+}
+.nav-link:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* =========================
+   App layout
+   ========================= */
+.app-shell {
+  min-height: calc(100vh - var(--navbar-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.app-card {
+  width: 100%;
+  height: calc(100vh - var(--navbar-height));
+  border-radius: 12px;
+  background: var(--card-bg);
+  box-shadow: 0 8px 30px rgba(21, 32, 60, 0.06);
+  overflow: hidden;
+  display: flex;
+  gap: 0;
+}
+
+/* Left / Right panes */
+.left-pane {
+  flex: 1.4; /* ~70% */
+  min-width: 300px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 16px;
+}
+
+.right-pane {
+  flex: 0.8; /* ~30% */
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 16px;
+}
+
+/* Pane header */
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Title */
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-900);
+  line-height: 1;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+/* Primary (Tạo dự án) */
+.btn-primary {
+  display: inline-block;
+  background: linear-gradient(180deg, var(--accent-400), var(--accent-500));
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 3px 10px rgba(31, 56, 121, 0.08);
+  transition: transform 0.1s ease, box-shadow 0.12s ease, opacity 0.12s;
+  border: none;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(31, 56, 121, 0.12);
+  opacity: 0.98;
+}
+
+/* Outline small button */
+.btn-outline {
+  display: inline-block;
+  border: 1px solid #dbe7ff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #1f2937;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+/* =========================
+   Recent list (left)
+   ========================= */
+.recent-list {
+  flex: 1;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+/* Project item */
+.project-item {
+  border-radius: 10px;
+  padding: 12px;
+  background: #fbfdff;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #eef4ff;
+}
+
+.project-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.project-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-900);
+  text-decoration: none;
+}
+
+.meta {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* =========================
+   Right cards
+   ========================= */
+.right-card {
+  flex: 1;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  /* important: padding inside card so content không dính viền */
+  padding: 12px;
+}
+
+/* header of each right-card */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0px 0;
+  border-bottom: 1px solid #f1f5f9;
+  background: transparent;
+}
+
+.card-header strong {
+  font-size: 14px;
+  margin: 0;
+}
+
+/* small link on header (nếu có) */
+.small-link {
+  font-size: 13px;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+/* card body: nội dung có khoảng cách so với header nhờ padding-top */
+.card-body {
+  padding-top: 12px;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+/* =========================
+   Utilities
+   ========================= */
+.text-muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+.small {
+  font-size: 13px;
+  color: #475569;
+}
+
+/* =========================
+   (No mobile / no responsive styles)
+   ========================= */
