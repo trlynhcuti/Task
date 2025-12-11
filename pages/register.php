@@ -31,15 +31,9 @@ if (isset($_POST['submit'])) {
         $sql_email = "SELECT id FROM users WHERE email = '$email_esc' LIMIT 1";
         $res_email = mysqli_query($conn, $sql_email);
 
-        // Kiểm tra tên người dùng tồn tại
-        $sql_name = "SELECT id FROM users WHERE `name` = '$name_esc' LIMIT 1";
-        $res_name = mysqli_query($conn, $sql_name);
-
         if ($res_email && mysqli_num_rows($res_email) > 0) {
             $errors = "Email đã được sử dụng!";
-        } elseif ($res_name && mysqli_num_rows($res_name) > 0) {
-            $errors = "Tên người dùng đã được sử dụng!";
-        } else {
+        }else {
 
             // Hash bằng MD5
             $hash = md5($password);
