@@ -11,7 +11,7 @@ include __DIR__ . '/includes/header.php';
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Trang chủ</title>
 
-  <link rel="stylesheet" href="./assets/css/index.css">
+  <link rel="stylesheet" href="/task_management/assets/css/index.css">
 </head>
 
 <body>

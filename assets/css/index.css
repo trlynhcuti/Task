@@ -1,17 +1,6 @@
 /* =========================
    Global reset & variables
    ========================= */
-:root {
-  --navbar-height: 56px;
-  --bg-page: #f3f6fb;
-  --card-bg: #ffffff;
-  --muted: #94a3b8;
-  --border: #eef2f6;
-  --accent-500: #1976d2;
-  --accent-400: #2f80ed;
-  --text-900: #0f1724;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -27,58 +16,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding-top: var(--navbar-height); /* giữ khoảng cho header cố định */
-}
-
-/* =========================
-   NAVBAR (header)
-   ========================= */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--navbar-height);
-  background: #abc4ff;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  z-index: 9999;
-}
-
-.navbar-brand {
-  font-size: 18px;
-  font-weight: 700;
-  color: #07122a;
-  text-decoration: none;
-  margin-right: 24px;
-  flex: 0 0 auto;
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex: 1 1 auto;
-  justify-content: flex-start;
-}
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex: 0 0 auto;
-  justify-content: flex-end;
-}
-
-.nav-link {
-  text-decoration: none;
-  color: #07122a;
-  padding: 6px 10px;
-  white-space: nowrap;
-  border-radius: 6px;
-}
-.nav-link:hover {
-  background: rgba(0, 0, 0, 0.06);
 }
 
 /* =========================
