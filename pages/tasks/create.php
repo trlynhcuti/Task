@@ -11,53 +11,55 @@ elseif (isset($conn) && $conn instanceof mysqli) $db = $conn;
 else die("Không tìm thấy kết nối MySQLi.");
 
 /* Check user login */
-$currentUserId = $_SESSION['user']['id'] ?? null;
+$currentUserId = isset($_SESSION['user']['id']) ? intval($_SESSION['user']['id']) : null;
 if (!$currentUserId) {
     header("Location: /html/sign-in.html");
     exit;
 }
 
 /* Get project_id */
-$project_id = isset($_GET['project_id']) ? (int)$_GET['project_id'] : 0;
+$project_id = isset($_GET['project_id']) ? intval($_GET['project_id']) : 0;
 if ($project_id <= 0) die("Project ID không hợp lệ.");
 
-/* Load project */
-$stmt = $db->prepare("SELECT id, name, owner_id FROM projects WHERE id = ?");
-$stmt->bind_param("i", $project_id);
-$stmt->execute();
-$project = $stmt->get_result()->fetch_assoc();
-$stmt->close();
+/* Load project (mysqli_query) */
+$sql = "SELECT id, name, owner_id FROM projects WHERE id = " . $project_id . " LIMIT 1";
+$res = mysqli_query($db, $sql);
+if (!$res) {
+    die("Lỗi truy vấn: " . mysqli_error($db));
+}
+$project = mysqli_fetch_assoc($res);
 if (!$project) die("Không tìm thấy project.");
 
 /* Load project members to assign task */
-$stmt = $db->prepare("
+$sql = "
     SELECT pm.user_id, u.name
     FROM project_members pm
     JOIN users u ON u.id = pm.user_id
-    WHERE pm.project_id = ?
+    WHERE pm.project_id = " . $project_id . "
     ORDER BY u.name
-");
-$stmt->bind_param("i", $project_id);
-$stmt->execute();
-$members = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+";
+$members = [];
+$res = mysqli_query($db, $sql);
+if ($res) {
+    while ($row = mysqli_fetch_assoc($res)) {
+        $members[] = $row;
+    }
+} else {
+    die("Lỗi truy vấn thành viên: " . mysqli_error($db));
+}
 
 /* Determine user permission */
 $currentPermission = null;
-foreach ($members as $m) {
-    if ($m['user_id'] == $currentUserId) {
-        $q = $db->prepare("SELECT permission FROM project_members WHERE project_id = ? AND user_id = ?");
-        $q->bind_param("ii", $project_id, $currentUserId);
-        $q->execute();
-        $r = $q->get_result()->fetch_assoc();
-        $q->close();
-        if ($r) $currentPermission = $r['permission'];
-        break;
-    }
+/* First try to fetch permission from project_members */
+$sql = "SELECT permission FROM project_members WHERE project_id = $project_id AND user_id = $currentUserId LIMIT 1";
+$res = mysqli_query($db, $sql);
+if ($res && mysqli_num_rows($res) > 0) {
+    $row = mysqli_fetch_assoc($res);
+    $currentPermission = $row['permission'];
 }
 
 /* Owner always has permission */
-if ($project['owner_id'] == $currentUserId) {
+if (isset($project['owner_id']) && intval($project['owner_id']) === $currentUserId) {
     $currentPermission = "owner";
 }
 
@@ -72,44 +74,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $assigned_to = isset($_POST['assigned_to']) ? (int)$_POST['assigned_to'] : 0;
+    $assigned_to = isset($_POST['assigned_to']) ? intval($_POST['assigned_to']) : 0;
     $status = $_POST['status'] ?? 'todo';
 
     if ($title === '') {
         $error = "Tiêu đề không được để trống.";
     } else {
-        /* Validate assigned_to */
+        // Escape inputs
+        $title_esc = mysqli_real_escape_string($db, $title);
+        $description_esc = mysqli_real_escape_string($db, $description);
+        $status_esc = mysqli_real_escape_string($db, $status);
+
+        // Validate assigned_to (must be member if > 0)
         if ($assigned_to > 0) {
-            $chk = $db->prepare("SELECT 1 FROM project_members WHERE project_id = ? AND user_id = ?");
-            $chk->bind_param("ii", $project_id, $assigned_to);
-            $chk->execute();
-            if (!$chk->get_result()->fetch_assoc()) {
+            $sql_chk = "SELECT 1 FROM project_members WHERE project_id = $project_id AND user_id = $assigned_to LIMIT 1";
+            $chk = mysqli_query($db, $sql_chk);
+            if (!$chk || mysqli_num_rows($chk) == 0) {
                 $error = "Người được giao không phải thành viên project.";
             }
-            $chk->close();
         }
 
         if ($error === "") {
-            /* Insert task */
+            // Build insert SQL
             if ($assigned_to > 0) {
-                $sql = "INSERT INTO tasks (project_id, title, description, created_by, assigned_to, status, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
-                $stmt = $db->prepare($sql);
-                $stmt->bind_param("ississ", $project_id, $title, $description, $currentUserId, $assigned_to, $status);
+                $sql_ins = "
+                    INSERT INTO tasks (project_id, title, description, created_by, assigned_to, status, created_at, updated_at)
+                    VALUES ($project_id, '$title_esc', '$description_esc', $currentUserId, $assigned_to, '$status_esc', NOW(), NOW())
+                ";
             } else {
-                $sql = "INSERT INTO tasks (project_id, title, description, created_by, assigned_to, status, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, NULL, ?, NOW(), NOW())";
-                $stmt = $db->prepare($sql);
-                $stmt->bind_param("issis", $project_id, $title, $description, $currentUserId, $status);
+                // assigned_to NULL
+                $sql_ins = "
+                    INSERT INTO tasks (project_id, title, description, created_by, assigned_to, status, created_at, updated_at)
+                    VALUES ($project_id, '$title_esc', '$description_esc', $currentUserId, NULL, '$status_esc', NOW(), NOW())
+                ";
             }
 
-            if ($stmt->execute()) {
-                $stmt->close();
+            if (mysqli_query($db, $sql_ins)) {
+                // Redirect to project detail
                 header("Location: /task_management/pages/projects/detail.php?id=" . urlencode($project_id));
                 exit;
             } else {
-                $error = "Lỗi tạo task: " . $db->error;
-                $stmt->close();
+                $error = "Lỗi tạo task: " . mysqli_error($db);
             }
         }
     }
@@ -168,27 +173,31 @@ input, textarea, select {
 
     <form method="POST">
         <label>Tiêu đề</label>
-        <input type="text" name="title" required>
+        <input type="text" name="title" required value="<?= isset($_POST['title']) ? e($_POST['title']) : '' ?>">
 
         <label>Mô tả</label>
-        <textarea name="description" rows="5"></textarea>
+        <textarea name="description" rows="5"><?= isset($_POST['description']) ? e($_POST['description']) : '' ?></textarea>
 
         <label>Giao cho</label>
         <select name="assigned_to">
             <option value="0">— Không giao (NULL) —</option>
-            <?php foreach ($members as $mem): ?>
-                <option value="<?= e($mem['user_id']) ?>">
-                    <?= e($mem['name']) ?>
-                </option>
+            <?php foreach ($members as $mem): 
+                $uid = intval($mem['user_id']);
+                $selected = (isset($_POST['assigned_to']) && intval($_POST['assigned_to']) === $uid) ? 'selected' : '';
+            ?>
+                <option value="<?= e($uid) ?>" <?= $selected ?>><?= e($mem['name']) ?></option>
             <?php endforeach; ?>
         </select>
 
         <label>Trạng thái</label>
         <select name="status" required>
-            <option value="todo">Todo</option>
-            <option value="in_progress">In Progress</option>
-            <option value="done">Done</option>
-            <option value="closed">Closed</option>
+            <?php
+                $cur_status = $_POST['status'] ?? 'todo';
+            ?>
+            <option value="todo" <?= $cur_status === 'todo' ? 'selected' : '' ?>>Todo</option>
+            <option value="in_progress" <?= $cur_status === 'in_progress' ? 'selected' : '' ?>>In Progress</option>
+            <option value="done" <?= $cur_status === 'done' ? 'selected' : '' ?>>Done</option>
+            <option value="closed" <?= $cur_status === 'closed' ? 'selected' : '' ?>>Closed</option>
         </select>
 
         <br>
