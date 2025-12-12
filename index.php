@@ -41,13 +41,19 @@ include __DIR__ . '/includes/header.php';
           } else {
             $userId = (int) $_SESSION['user']['id'];
 
-            // Lấy dự án của user
+            // Lấy tất cả project mà user là owner OR project được share (project_members)
+            // Không thay đổi HTML/CSS — chỉ thay logic truy vấn
+            $user_q = $userId;
+
             $sql = "
-            SELECT p.*, u.name AS owner_name
-            FROM projects p
-            LEFT JOIN users u ON u.id = p.owner_id
-            WHERE p.owner_id = $userId
-            ORDER BY p.updated_at DESC";
+    SELECT DISTINCT p.*, u.name AS owner_name, pm.permission AS my_permission
+    FROM projects p
+    LEFT JOIN users u ON u.id = p.owner_id
+    LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = $user_q
+    WHERE p.owner_id = $user_q
+       OR p.id IN (SELECT project_id FROM project_members WHERE user_id = $user_q)
+    ORDER BY p.updated_at DESC
+  ";
 
             $res = mysqli_query($conn, $sql);
 
@@ -58,11 +64,11 @@ include __DIR__ . '/includes/header.php';
                 $title   = htmlspecialchars($row['name']);
                 $desc    = htmlspecialchars($row['description']);
                 $owner   = htmlspecialchars($row['owner_name']);
-                $updated = date("d/m/Y H:i", strtotime($row['updated_at']));
+                $updated = $row['updated_at'] ? date("d/m/Y H:i", strtotime($row['updated_at'])) : '';
 
-                $openUrl = "./pages/projects/open.php?id=" . $pid;
+                $openUrl = "/task_management/pages/projects/detail.php?id=" . urlencode($pid);
+
           ?>
-
                 <div class="project-item">
                   <div class="project-info">
                     <a class="project-title" href="<?= $openUrl ?>"><?= $title ?></a>
@@ -75,14 +81,14 @@ include __DIR__ . '/includes/header.php';
                     <a class="btn-outline" href="<?= $openUrl ?>">Mở</a>
                   </div>
                 </div>
-
           <?php
-              }
+              } // end while
             } else {
               echo "<div class='small'>Bạn chưa có dự án nào.</div>";
             }
           }
           ?>
+
         </div>
 
       </div>
