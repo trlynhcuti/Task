@@ -121,6 +121,7 @@ $projectName = $proj['name'] ?? ("#" . $project_id);
 </head>
 <body>
 <div class="container">
+    
     <h2>Thêm thành viên cho dự án: <?= htmlspecialchars($projectName) ?></h2>
 
     <?php if ($error): ?>
@@ -151,10 +152,6 @@ $projectName = $proj['name'] ?? ("#" . $project_id);
         <select name="permission" required>
             <option value="contributor">contributor</option>
             <option value="editor">editor</option>
-            <option value="viewer">viewer</option>
-            <?php if ($myPermission === 'owner'): ?>
-                <option value="owner">owner</option>
-            <?php endif; ?>
         </select>
 
         <button type="submit" class="btn" style="margin-top:14px;">Thêm thành viên</button>

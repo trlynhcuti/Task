@@ -30,7 +30,7 @@ if (!$res) {
 $project = mysqli_fetch_assoc($res);
 if (!$project) die("Không tìm thấy project.");
 
-/* Load project members to assign task */
+/* Load project members (kept in case you want to show list, but we won't insert them) */
 $sql = "
     SELECT pm.user_id, u.name
     FROM project_members pm
@@ -74,8 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $assigned_to = isset($_POST['assigned_to']) ? intval($_POST['assigned_to']) : 0;
-    $status = $_POST['status'] ?? 'todo';
 
     if ($title === '') {
         $error = "Tiêu đề không được để trống.";
@@ -83,39 +81,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Escape inputs
         $title_esc = mysqli_real_escape_string($db, $title);
         $description_esc = mysqli_real_escape_string($db, $description);
-        $status_esc = mysqli_real_escape_string($db, $status);
 
-        // Validate assigned_to (must be member if > 0)
-        if ($assigned_to > 0) {
-            $sql_chk = "SELECT 1 FROM project_members WHERE project_id = $project_id AND user_id = $assigned_to LIMIT 1";
-            $chk = mysqli_query($db, $sql_chk);
-            if (!$chk || mysqli_num_rows($chk) == 0) {
-                $error = "Người được giao không phải thành viên project.";
-            }
-        }
+        // Build insert SQL WITHOUT assigned_to and status (columns deleted)
+        $sql_ins = "
+            INSERT INTO tasks (project_id, title, description, created_by, created_at, updated_at)
+            VALUES ($project_id, '$title_esc', '$description_esc', $currentUserId, NOW(), NOW())
+        ";
 
-        if ($error === "") {
-            // Build insert SQL
-            if ($assigned_to > 0) {
-                $sql_ins = "
-                    INSERT INTO tasks (project_id, title, description, created_by, assigned_to, status, created_at, updated_at)
-                    VALUES ($project_id, '$title_esc', '$description_esc', $currentUserId, $assigned_to, '$status_esc', NOW(), NOW())
-                ";
-            } else {
-                // assigned_to NULL
-                $sql_ins = "
-                    INSERT INTO tasks (project_id, title, description, created_by, assigned_to, status, created_at, updated_at)
-                    VALUES ($project_id, '$title_esc', '$description_esc', $currentUserId, NULL, '$status_esc', NOW(), NOW())
-                ";
-            }
-
-            if (mysqli_query($db, $sql_ins)) {
-                // Redirect to project detail
-                header("Location: /task_management/pages/projects/detail.php?id=" . urlencode($project_id));
-                exit;
-            } else {
-                $error = "Lỗi tạo task: " . mysqli_error($db);
-            }
+        if (mysqli_query($db, $sql_ins)) {
+            // Redirect to project detail
+            header("Location: /task_management/pages/projects/detail.php?id=" . urlencode($project_id));
+            exit;
+        } else {
+            $error = "Lỗi tạo task: " . mysqli_error($db);
         }
     }
 }
@@ -178,27 +156,7 @@ input, textarea, select {
         <label>Mô tả</label>
         <textarea name="description" rows="5"><?= isset($_POST['description']) ? e($_POST['description']) : '' ?></textarea>
 
-        <label>Giao cho</label>
-        <select name="assigned_to">
-            <option value="0">— Không giao (NULL) —</option>
-            <?php foreach ($members as $mem): 
-                $uid = intval($mem['user_id']);
-                $selected = (isset($_POST['assigned_to']) && intval($_POST['assigned_to']) === $uid) ? 'selected' : '';
-            ?>
-                <option value="<?= e($uid) ?>" <?= $selected ?>><?= e($mem['name']) ?></option>
-            <?php endforeach; ?>
-        </select>
-
-        <label>Trạng thái</label>
-        <select name="status" required>
-            <?php
-                $cur_status = $_POST['status'] ?? 'todo';
-            ?>
-            <option value="todo" <?= $cur_status === 'todo' ? 'selected' : '' ?>>Todo</option>
-            <option value="in_progress" <?= $cur_status === 'in_progress' ? 'selected' : '' ?>>In Progress</option>
-            <option value="done" <?= $cur_status === 'done' ? 'selected' : '' ?>>Done</option>
-            <option value="closed" <?= $cur_status === 'closed' ? 'selected' : '' ?>>Closed</option>
-        </select>
+        
 
         <br>
         <a href="/task_management/pages/projects/detail.php?id=<?= urlencode($project_id) ?>" class="btn-grey">Hủy</a>
