@@ -158,7 +158,7 @@ $canModifyTasks = in_array($currentPermission, ['owner', 'editor'], true);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Chi tiết dự án - <?= htmlspecialchars($project['name']) ?></title>
-  <link rel="stylesheet" href="/task_management/assets/css/index.css">
+  <!-- <link rel="stylesheet" href="/task_management/assets/css/index.css"> -->
   <style>
     body {
       margin-top: 60px;
