@@ -86,11 +86,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $sql = "
     SELECT u.id, u.name, u.email
     FROM users u
-    WHERE u.id NOT IN (
-        SELECT pm.user_id FROM project_members pm WHERE pm.project_id = $project_id
-    )
+    WHERE u.role <> 'admin'
+      AND u.id NOT IN (
+          SELECT pm.user_id
+          FROM project_members pm
+          WHERE pm.project_id = $project_id
+      )
     ORDER BY u.name
 ";
+
 $res = mysqli_query($db, $sql);
 $availableUsers = [];
 while ($row = mysqli_fetch_assoc($res)) $availableUsers[] = $row;
@@ -152,6 +156,7 @@ $projectName = $proj['name'] ?? ("#" . $project_id);
         <select name="permission" required>
             <option value="contributor">contributor</option>
             <option value="editor">editor</option>
+            <option value="viewer">viewer</option>
         </select>
 
         <button type="submit" class="btn" style="margin-top:14px;">Thêm thành viên</button>

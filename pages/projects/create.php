@@ -14,83 +14,88 @@ if (isset($mysqli) && $mysqli instanceof mysqli) {
     die("Không tìm thấy kết nối MySQLi.");
 }
 
-$currentUserId = $_SESSION['user']['id'];
+/* current user */
+$currentUserId = (int)($_SESSION['user']['id'] ?? 0);
+if ($currentUserId <= 0) {
+    header("Location: /html/sign-in.html");
+    exit;
+}
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tạo dự án mới</title>
-
     <link rel="stylesheet" href="../../assets/css/create_project.css">
-
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
         }
+        .alert { color:#b00020; margin-top:10px; }
+        .success { color:green; margin-top:10px; }
     </style>
-
 </head>
-
 <body>
-    <div class="box">
-        <h1>Tạo dự án mới</h1>
 
-        <form method="post">
-            <label for="name">Tên dự án</label>
-            <input type="text" name="name" required>
+<div class="box">
+    <h1>Tạo dự án mới</h1>
 
-            <label for="description">Mô tả</label>
-            <input type="text" name="description">
+    <form method="post">
+        <label>Tên dự án</label>
+        <input type="text" name="name" required>
 
-            <button type="submit" name="submit" class="btn">Tạo</button>
-        </form>
+        <label>Mô tả</label>
+        <input type="text" name="description">
 
-        <?php
-        if (isset($_POST['submit'])) {
+        <button type="submit" name="submit" class="btn">Tạo</button>
+    </form>
 
-            $name = trim($_POST['name'] ?? "");
-            $des  = trim($_POST['description'] ?? "");
+<?php
+if (isset($_POST['submit'])) {
 
-            // Insert project (dùng prepared statement)
-            $stmt = $db->prepare("
-                INSERT INTO projects (name, description, owner_id, created_at, updated_at)
-                VALUES (?, ?, ?, NOW(), NOW())
-            ");
-            $stmt->bind_param("ssi", $name, $des, $currentUserId);
+    $name = trim($_POST['name'] ?? '');
+    $des  = trim($_POST['description'] ?? '');
 
-            if ($stmt->execute()) {
+    if ($name === '') {
+        echo "<div class='alert'>Tên dự án không được rỗng.</div>";
+    } else {
 
-                // Lấy project_id vừa tạo
-                $project_id = $stmt->insert_id;
-                $stmt->close();
+        /* escape dữ liệu */
+        $nameEsc = mysqli_real_escape_string($db, $name);
+        $desEsc  = mysqli_real_escape_string($db, $des);
 
-                // Thêm người tạo vào project_members với permission = 'owner'
-                $stmt2 = $db->prepare("
-                    INSERT INTO project_members (project_id, user_id, permission, added_by, added_at)
-                    VALUES (?, ?, 'owner', ?, NOW())
-                ");
-                $stmt2->bind_param("iii", $project_id, $currentUserId, $currentUserId);
-                $stmt2->execute();
-                $stmt2->close();
+        /* insert project */
+        $sql = "
+            INSERT INTO projects (name, description, owner_id, created_at, updated_at)
+            VALUES ('$nameEsc', '$desEsc', $currentUserId, NOW(), NOW())
+        ";
 
-                echo "<div class='success'>Tạo dự án thành công!</div>";
-                header("Refresh: 1; url=/task_management/index.php");
-                exit;
+        if (mysqli_query($db, $sql)) {
 
-            } else {
-                echo "<div class='alert'>Tạo dự án thất bại: " . $db->error . "</div>";
-            }
+            $project_id = mysqli_insert_id($db);
+
+            /* thêm owner vào project_members */
+            $sql2 = "
+                INSERT INTO project_members (project_id, user_id, permission, added_by, added_at)
+                VALUES ($project_id, $currentUserId, 'owner', $currentUserId, NOW())
+            ";
+            mysqli_query($db, $sql2);
+
+            echo "<div class='success'>Tạo dự án thành công!</div>";
+            header("Refresh: 1; url=/task_management/index.php");
+            exit;
+
+        } else {
+            echo "<div class='alert'>Tạo dự án thất bại: " . mysqli_error($db) . "</div>";
         }
-        ?>
-    </div>
+    }
+}
+?>
+
+</div>
 
 </body>
-
 </html>

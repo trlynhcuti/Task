@@ -143,7 +143,7 @@ input, textarea, select {
 <body>
 <div class="card">
     <h2>Tạo Task mới</h2>
-    <div>Project: <b><?= e($project['name']) ?></b></div>
+    <div>Dự án: <b><?= e($project['name']) ?></b></div>
 
     <?php if ($error): ?>
         <div class="error"><?= e($error) ?></div>
@@ -153,7 +153,7 @@ input, textarea, select {
         <label>Tiêu đề</label>
         <input type="text" name="title" required value="<?= isset($_POST['title']) ? e($_POST['title']) : '' ?>">
 
-        <label>Mô tả</label>
+        <label>Nội dung</label>
         <textarea name="description" rows="5"><?= isset($_POST['description']) ? e($_POST['description']) : '' ?></textarea>
 
         
