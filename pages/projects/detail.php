@@ -373,7 +373,6 @@ $canModifyTasks = in_array($currentPermission, ['owner', 'editor'], true);
       </div>
 
       <!-- COMMENTS -->
-            <!-- COMMENTS -->
       <div class="comments-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <strong>Bình luận</strong>
@@ -384,46 +383,52 @@ $canModifyTasks = in_array($currentPermission, ['owner', 'editor'], true);
           <div class="small-muted">Chưa có bình luận nào.</div>
         <?php else: ?>
           <?php foreach ($comments as $c): ?>
-            <div class="comment" style="display:flex; gap:12px; padding:12px 0; border-bottom:1px dashed #ddd;">
-              <div style="flex:1;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="font-weight:600;">
-                    <?= htmlspecialchars($c['user_name']) ?>
-                  </div>
-                  <div class="small-muted">
-                    <?= htmlspecialchars(date('d/m/Y H:i', strtotime($c['created_at']))) ?>
-                  </div>
-                </div>
+            <?php
+            $isCommentOwner = ($c['user_id'] == $currentUserId);
+            ?>
 
-                <div style="margin-top:6px;">
-                  <?= nl2br(htmlspecialchars($c['content'])) ?>
-                </div>
+            <div class="comment" style="border-bottom:1px dashed #ddd;padding:10px 0;">
+              <div style="display:flex;justify-content:space-between;">
+                <strong><?= htmlspecialchars($c['user_name']) ?></strong>
+                <small><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></small>
+              </div>
+
+              <div><?= nl2br(htmlspecialchars($c['content'])) ?></div>
+
+              <div style="margin-top:6px;">
+                <?php if ($isCommentOwner): ?>
+                  <a class="btn" href="/task_management/pages/comments/edit.php?id=<?= $c['id'] ?>">Sửa</a>
+                <?php endif; ?>
+
+                <?php if ($isCommentOwner || $isOwner): ?>
+                  <form class="inline" method="post"
+                    action="/task_management/pages/comments/delete.php"
+                    onsubmit="return confirm('Xóa comment này?');">
+                    <input type="hidden" name="comment_id" value="<?= $c['id'] ?>">
+                    <input type="hidden" name="project_id" value="<?= $project_id_q ?>">
+                    <button class="btn-danger">Xóa</button>
+                  </form>
+                <?php endif; ?>
               </div>
             </div>
+
           <?php endforeach; ?>
         <?php endif; ?>
 
         <?php if (!empty($errorMsg)): ?>
-          <div class="small-muted" style="color:#b00020; margin-top:8px;">
-            <?= htmlspecialchars($errorMsg) ?>
-          </div>
+          <div class="small-muted" style="color:#b00020; margin-top:8px;"><?= htmlspecialchars($errorMsg) ?></div>
         <?php endif; ?>
 
         <?php if ($canComment): ?>
           <form method="post" style="margin-top:8px;">
-            <textarea name="comment" placeholder="Viết bình luận..." required
-              style="width:100%;min-height:70px;padding:8px;"></textarea>
+            <textarea name="comment" placeholder="Viết bình luận..." required style="width:100%;min-height:70px;padding:8px;"></textarea>
             <div style="display:flex; gap:8px; margin-top:6px; align-items:center;">
               <button class="btn btn-primary" type="submit">Gửi</button>
             </div>
           </form>
         <?php else: ?>
-          <div class="small-muted" style="margin-top:8px;">
-            Bạn không có quyền viết bình luận trong dự án này.
-          </div>
+          <div class="small-muted" style="margin-top:8px;">Bạn không có quyền viết bình luận trong dự án này.</div>
         <?php endif; ?>
-      </div>
-
 
       </div>
 
